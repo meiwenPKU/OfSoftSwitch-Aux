@@ -579,8 +579,8 @@ send_openflow_buffer_to_remote(struct ofpbuf *buffer, struct remote *remote) {
 static int
 send_openflow_buffer(struct datapath *dp, struct ofpbuf *buffer,
                      const struct sender *sender) {
-    update_openflow_length(buffer);
-    if (sender) {
+    update_openflow_length(buffer);    
+    if (sender && sender->remote) {
         /* Send back to the sender. */
         return send_openflow_buffer_to_remote(buffer, sender->remote);
 
@@ -696,7 +696,7 @@ dp_send_message(struct datapath *dp, struct ofl_msg_header *msg,
         ofpbuf->conn_id = rand()%AUX_MAX + 1; //hemin yang
     
     //debug hemin
-    printf("debug here\n");
+    //printf("debug here\n");
        
     error = send_openflow_buffer(dp, ofpbuf, sender);
     if (error) {

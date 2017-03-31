@@ -30,7 +30,6 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
 #include <netinet/in.h>
 #include <endian.h>
 #include "ofl-actions.h"
@@ -222,6 +221,7 @@ ofl_msg_unpack_packet_in(struct ofp_header *src, uint8_t* buf, size_t *len, stru
     struct ofp_packet_in *sp;
     struct ofl_msg_packet_in *dp;
     uint8_t *ptr;
+    ofl_err error;
 
     if (*len < sizeof(struct ofp_packet_in)) {
         OFL_LOG_WARN(LOG_MODULE, "Received PACKET_IN message has invalid length (%zu).", *len);
@@ -259,16 +259,16 @@ ofl_msg_unpack_packet_in(struct ofp_header *src, uint8_t* buf, size_t *len, stru
     dp->cookie = ntoh64(sp->cookie);
     
     ptr = buf + (sizeof(struct ofp_packet_in)-4);
-    
     //debug hemin
     if (dp->buffer_id == 67764354){
-        OFL_LOG_WARN(LOG_MODULE,"debug here.");
-        printf("this is for test\n");
+        OFL_LOG_WARN(LOG_MODULE, "debug here.");
+    }
+    error = ofl_structs_match_unpack(&(sp->match),ptr, len ,&(dp->match),NULL); 
+    if (error) {
+        free(dp);
+        return error;
     }
 
-
-    ofl_structs_match_unpack(&(sp->match),ptr, len ,&(dp->match),NULL);
-    
     ptr = buf + ROUND_UP(sizeof(struct ofp_packet_in)-4 + dp->match->length,8) + 2;
     /* Minus padding bytes */
     *len -= 2;
